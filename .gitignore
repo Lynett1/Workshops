@@ -5,7 +5,11 @@
 .vscode
 .idea
 
-
+Library/
+Temp/
+Logs/
+UserSettings/
+Temp/
 
 
 .utmp/
