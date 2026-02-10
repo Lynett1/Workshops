@@ -5,7 +5,7 @@ using System;
 
 public class Player : MonoBehaviour
 {
-    public float speed = 20f;
+    [SerializeField] private float speed = 20f;
     [SerializeField] private Rigidbody rb;
     private float movementX;
     private float movementY;
