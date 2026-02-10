@@ -107,3 +107,5 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+Workshop-1/unity-workshop-1/Packages/manifest.json
+Workshop-1/unity-workshop-1/Packages/packages-lock.json
