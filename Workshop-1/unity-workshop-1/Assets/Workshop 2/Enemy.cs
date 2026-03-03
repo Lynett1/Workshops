@@ -1,5 +1,7 @@
-using System.Numerics;
 using System.Runtime.Serialization;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -8,7 +10,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float speed = 5f;
     [SerializeField] private Rigidbody2D player;
     private Rigidbody2D rb;
-    [SerializeField] private bool Scared;
+    //[SerializeField] private bool Scared;
     public GameObject bucketPrefab;
     private float distance;
     [SerializeField] private GameObject attack;
@@ -17,17 +19,13 @@ public class Enemy : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        StartCoroutine(chase());
     }
 
     // Update is called once per frame
     void Update()
     {
-        distance = Vector2.Distance(transform.position, player.position);
-        if (distance < 1f)
-        {
 
-            StartCoroutine(Attacking());
-        }
     }
 
     void FixedUpdate()
@@ -36,7 +34,7 @@ public class Enemy : MonoBehaviour
     }
 
     void LateUpdate()
-    {
+    {/*
         if (Scared)
         {
             StartCoroutine(Scared());
@@ -48,14 +46,26 @@ public class Enemy : MonoBehaviour
             StopCoroutine(CountDown());
             StartCoroutine(chase());
         }
-            
+            */
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag("Player"))
+        {
+            StartCoroutine(Attacking());
+        }
     }
 
     private IEnumerator TeammateDied()
     {
-        yield return new WaitForSeconds(1);
         CustomEvent.Trigger(this.gameObject, "TeammateDied");
         Debug.Log("TeammateDied");
+        StartCoroutine(Scared());
+        StopCoroutine(chase());
+        yield return new WaitForSeconds(1);
+        StopCoroutine(Scared());
+        StartCoroutine(chase());
     }
 
     void Die()
@@ -64,13 +74,12 @@ public class Enemy : MonoBehaviour
         Instantiate(bucketPrefab, transform.position, transform.rotation);
     }
 
-    private IEnumerable chase()
+    private IEnumerator chase()
     {
         while(true)
         {
             Vector2 direction = (player.position - rb.position).normalized;
-            rb.MovePosition(rb.position + direction * speed * Time.deltaTime);
-        }
+            rb.MovePosition(rb.position + direction * speed * Time.deltaTime);        }
         
     }
 
@@ -97,7 +106,6 @@ public class Enemy : MonoBehaviour
         yield return new WaitForSeconds(1);
         CustomEvent.Trigger(this.gameObject, "CountedDown");
         Debug.Log("CountedDown");
-        Scared = false;
     }
 
 }
