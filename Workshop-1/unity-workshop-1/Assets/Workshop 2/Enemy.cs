@@ -8,29 +8,23 @@ public class Enemy : MonoBehaviour
 {
 
     [SerializeField] private float speed = 5f;
-    [SerializeField] private Rigidbody2D player;
-    private Rigidbody2D rb;
+    [SerializeField] private Rigidbody player;
+    private Rigidbody rb; 
     //[SerializeField] private bool Scared;
     public GameObject bucketPrefab;
     private float distance;
     [SerializeField] private GameObject attack;
+    [SerializeField] private int health = 2;
+
+    private Coroutine chaseCoroutine;
+    private Coroutine scaredCoroutine;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        StartCoroutine(chase());
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    void FixedUpdate()
-    {
-        
+        rb = GetComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        chaseCoroutine = StartCoroutine(chase());
     }
 
     void LateUpdate()
@@ -47,25 +41,41 @@ public class Enemy : MonoBehaviour
             StartCoroutine(chase());
         }
             */
+        if (health <= 0)
+        {
+            Die();
+        }
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
             StartCoroutine(Attacking());
         }
+        else if (other.gameObject.CompareTag("PlayerAttack"))
+        {
+            health--;
+        }
     }
 
-    private IEnumerator TeammateDied()
+    public void TriggerTeammateDied()
+    {
+        StartCoroutine(TeammateDiedRoutine());
+    }
+
+    private IEnumerator TeammateDiedRoutine()
     {
         CustomEvent.Trigger(this.gameObject, "TeammateDied");
         Debug.Log("TeammateDied");
-        StartCoroutine(Scared());
-        StopCoroutine(chase());
+        
+        if (chaseCoroutine != null) StopCoroutine(chaseCoroutine);
+        scaredCoroutine = StartCoroutine(Scared());
+        
         yield return new WaitForSeconds(1);
-        StopCoroutine(Scared());
-        StartCoroutine(chase());
+        
+        if (scaredCoroutine != null) StopCoroutine(scaredCoroutine);
+        chaseCoroutine = StartCoroutine(chase());
     }
 
     void Die()
@@ -78,9 +88,10 @@ public class Enemy : MonoBehaviour
     {
         while(true)
         {
-            Vector2 direction = (player.position - rb.position).normalized;
-            rb.MovePosition(rb.position + direction * speed * Time.deltaTime);        }
-        
+            Vector3 direction = (player.position - rb.position).normalized;
+            rb.AddForce(direction * speed * Time.deltaTime, ForceMode.VelocityChange);
+            yield return new WaitForFixedUpdate();
+        }
     }
 
     private IEnumerator Attacking()
@@ -95,8 +106,9 @@ public class Enemy : MonoBehaviour
     {
         while(true)
         {
-            Vector2 direction = (player.position - rb.position).normalized;
-            rb.MovePosition(rb.position - direction * (speed/2) * Time.deltaTime);            
+            Vector3 direction = (player.position - rb.position).normalized;
+            rb.AddForce(-direction * (speed/2) * Time.deltaTime, ForceMode.VelocityChange);
+            yield return new WaitForFixedUpdate();
         }
 
     }
