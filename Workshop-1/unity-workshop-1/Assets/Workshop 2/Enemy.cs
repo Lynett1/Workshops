@@ -27,17 +27,6 @@ public class Enemy : MonoBehaviour
         chaseCoroutine = StartCoroutine(chase());
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    void FixedUpdate()
-    {
-        
-    }
-
     void LateUpdate()
     {/*
         if (Scared)
@@ -64,9 +53,18 @@ public class Enemy : MonoBehaviour
         {
             StartCoroutine(Attacking());
         }
+        else if (other.gameObject.CompareTag("PlayerAttack"))
+        {
+            health--;
+        }
     }
 
-    private IEnumerator TeammateDied()
+    public void TriggerTeammateDied()
+    {
+        StartCoroutine(TeammateDiedRoutine());
+    }
+
+    private IEnumerator TeammateDiedRoutine()
     {
         CustomEvent.Trigger(this.gameObject, "TeammateDied");
         Debug.Log("TeammateDied");
